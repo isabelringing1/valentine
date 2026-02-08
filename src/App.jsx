@@ -17,6 +17,10 @@ function App() {
   const [currentValentine, setCurrentValentine] = useState(null);
   const [collection, setCollection] = useState({});
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [userId, setUserId] = useState(null);
+
+  const options = { debug: false };
+  const idGen = new ShortUID(options);
 
   useEffect(() => {
     loadData();
@@ -42,9 +46,9 @@ function App() {
       return;
     }
     setCurrentValentine(json);
-    console.log(json, collection);
+    console.log(json);
     var newCollection = { ...collection };
-    if (!newCollection[json.id]) {
+    if (!newCollection[json.id] && json.u != userId) {
       newCollection[json.id] = json;
       setCollection(newCollection);
     }
@@ -55,7 +59,7 @@ function App() {
 
   useEffect(() => {
     saveData();
-  }, [collection]);
+  }, [collection, userId]);
 
   function loadData() {
     var saveData = localStorage.getItem("valentines");
@@ -65,16 +69,21 @@ function App() {
         saveData = JSON.parse(window.atob(saveData));
         console.log("loaded ", saveData);
         setCollection(saveData.collection);
+        setUserId(saveData.userId);
         setDataLoaded(true);
       } catch (e) {
         return null;
       }
+    } else {
+      var id = idGen.randomUUID();
+      setUserId(id);
     }
   }
 
   function saveData() {
     var newPlayerData = {
       collection: collection,
+      userId: userId,
     };
     var saveString = JSON.stringify(newPlayerData);
     localStorage.setItem("valentines", window.btoa(saveString));
@@ -108,6 +117,9 @@ function App() {
       if (lastPage == "collection") {
         return "THIS IS A VALENTINE";
       } else {
+        if (currentValentine.u == userId) {
+          return "YOU SENT A VALENTINE TO YOURSELF?";
+        }
         return "YOU GOT A VALENTINE!";
       }
     } else if (page == "collection") {
@@ -152,6 +164,7 @@ function App() {
     setCategory(category);
     setLastPage(page);
     setPage("draw");
+    setTempStatus(null);
   };
 
   const closeValentine = () => {
@@ -234,6 +247,7 @@ function App() {
           setTempSubtitle={setTempSubtitle}
           setPage={setPage}
           setLastPage={setLastPage}
+          userId={userId}
         />
       )}
 
@@ -257,6 +271,8 @@ function App() {
         <Collection
           collection={collection}
           onMiniValentineClicked={onMiniValentineClicked}
+          setPage={setPage}
+          setLastPage={setLastPage}
         />
       )}
     </div>

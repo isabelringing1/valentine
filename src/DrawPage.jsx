@@ -16,9 +16,9 @@ export default function DrawPage(props) {
     drawStatus,
     setDrawStatus,
     setTempSubtitle,
-
     setPage,
     setLastPage,
+    userId,
   } = props;
   var [drawingComplete, setDrawingComplete] = useState(false);
   var [drawingConfirmed, setDrawingConfirmed] = useState(false);
@@ -153,6 +153,7 @@ export default function DrawPage(props) {
   const getFinalMessageStyle = () => {
     var path = document.getElementById("react-sketch-canvas__0");
     var rect = path.getBoundingClientRect();
+    var yOffset = window.innerHeight * 0.04;
     if (isMobile) {
       return {
         left: 0,
@@ -161,8 +162,8 @@ export default function DrawPage(props) {
     }
 
     return {
-      left: rect.left + rect.width + "px",
-      top: rect.top + "px",
+      left: rect.left + rect.width + 50 + "px",
+      top: rect.top + rect.height / 2 - yOffset + "px",
     };
   };
 
@@ -209,6 +210,7 @@ export default function DrawPage(props) {
       f: fromText,
       c: category,
       id: id,
+      u: userId,
     };
 
     if (currentId == null) {
@@ -217,6 +219,9 @@ export default function DrawPage(props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+      });
+      gtag("event", "post_score", {
+        score: category == "sweet" ? 0 : 1,
       });
     }
 
@@ -321,7 +326,11 @@ export default function DrawPage(props) {
       )}
 
       {valentineFinished && (
-        <div className="final-message-container" style={getFinalMessageStyle()}>
+        <div
+          className="final-message-container"
+          id="final-message-container"
+          style={getFinalMessageStyle()}
+        >
           <div className="message-text">To: {toText}</div>
           <div className="message-text">From: {fromText}</div>
         </div>
