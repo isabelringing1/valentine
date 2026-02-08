@@ -8,6 +8,7 @@ import redo from "/redo.png";
 import dottedHeart from "/dotted-heart.png";
 import dottedDick from "/dotted-dick.png";
 const isMobile = window.innerWidth <= 600;
+const BASE = "https://kv-worker.isabisabel.workers.dev";
 
 export default function DrawPage(props) {
   var {
@@ -27,6 +28,7 @@ export default function DrawPage(props) {
   var [fromText, setFromText] = useState("");
   var [toText, setToText] = useState("");
   var [showLinkCopied, setShowLinkCopied] = useState(false);
+  var [currentId, setCurrentId] = useState(null);
 
   var canvasRef = useRef(null);
   var toInputRef = useRef(null);
@@ -144,6 +146,7 @@ export default function DrawPage(props) {
       top: rect.top + "px",
       width: rect.width + "px",
       height: rect.height + "px",
+      display: "flex",
     };
   }
 
@@ -175,19 +178,10 @@ export default function DrawPage(props) {
   }
 
   async function copyShareLink() {
-    var val = await exportValentine();
-    console.log(val);
-    var saveString = JSON.stringify(val);
-
-    var compressedURI = LZString.compressToEncodedURIComponent(saveString);
-    console.log(saveString.length, compressedURI.length);
-
-    var url = window.location.href;
-    console.log(url);
-    if (url.charAt(url.length - 1) == "/") {
-      url = url.substr(0, url.length - 1);
-    }
-    navigator.clipboard.writeText(url + "/#/" + compressedURI);
+    var id = await exportValentine();
+    navigator.clipboard.writeText(
+      window.location.origin + window.location.pathname + "#/" + id,
+    );
     setShowLinkCopied(true);
     setTimeout(() => {
       setShowLinkCopied(false);
@@ -202,14 +196,31 @@ export default function DrawPage(props) {
 
     var compressedMessage = LZString.compressToEncodedURIComponent(message);
 
-    return {
+    var id = currentId;
+    if (currentId == null) {
+      id = idGen.randomUUID();
+      setCurrentId(id);
+    }
+
+    var data = {
       d: match[1],
       m: compressedMessage,
       t: toText,
       f: fromText,
       c: category,
-      id: idGen.randomUUID(),
+      id: id,
     };
+
+    if (currentId == null) {
+      // save
+      await fetch(`${BASE}/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+    }
+
+    return id;
   }
 
   function isFinishButtonDisabled() {

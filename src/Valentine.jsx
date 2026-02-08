@@ -28,13 +28,22 @@ export default function Valentine(props) {
       newScale = Math.min(newScaleW, newScaleH);
     }
 
-    var svg = document.getElementById("svg");
+    var path = document.getElementById("path");
+    var svgRect = svg.getBoundingClientRect();
+    var pathRect = path.getBoundingClientRect();
+
+    //make center of path
+    var goalLeft = window.innerWidth / 2 - pathRect.width / 2;
+    var goalTop = window.innerHeight / 2 - pathRect.height / 2;
+    path.style.transform =
+      "translate(" +
+      -(pathRect.left - goalLeft) +
+      "px, " +
+      -(pathRect.top - goalTop) +
+      "px)";
+
     setTrueScale(newScale);
     svg.style.scale = 0;
-    var offFromCenterX = rect.x + rect.width / 2 - window.innerWidth / 2;
-    var offFromCenterY = rect.y + rect.height / 2 - window.innerHeight / 2;
-    svg.style.transform =
-      "translate(" + -offFromCenterX + "px, " + -offFromCenterY + "px)";
 
     if (!firstView) {
       setTimeout(() => {
@@ -64,7 +73,10 @@ export default function Valentine(props) {
     svg.setAttribute("height", window.innerHeight);
     svg.style.opacity = 0;
 
-    //svg.setAttribute("viewBox", "0 0 200 200"); // Define the coordinate system
+    svg.setAttribute(
+      "viewBox",
+      "0 0 " + window.innerWidth + " " + window.innerHeight,
+    ); // Define the coordinate system
 
     // 2. Create the path element
     const path = document.createElementNS(svgns, "path");
@@ -93,6 +105,7 @@ export default function Valentine(props) {
       top: rect.top + "px",
       width: rect.width + "px",
       height: rect.height + "px",
+      display: "flex",
     };
   };
 

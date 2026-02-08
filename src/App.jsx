@@ -5,6 +5,7 @@ import DrawPage from "./DrawPage";
 import Valentine from "./Valentine";
 import back from "/back.png";
 import Collection from "./Collection";
+const BASE = "https://kv-worker.isabisabel.workers.dev";
 
 function App() {
   const [page, setPage] = useState("main");
@@ -19,32 +20,38 @@ function App() {
 
   useEffect(() => {
     loadData();
+    window.addEventListener("hashchange", onHashChange);
   }, []);
 
   useEffect(() => {
     if (dataLoaded) {
-      var newValentineData = window.location.hash.replace(/^#\/?/, "");
-      if (newValentineData) {
-        var decompressed =
-          LZString.decompressFromEncodedURIComponent(newValentineData);
-        console.log(decompressed);
-        var json = JSON.parse(decompressed);
-        if (!json) {
-          return;
-        }
-        setCurrentValentine(json);
-        console.log(json, collection);
-        var newCollection = { ...collection };
-        if (!newCollection[json.id]) {
-          newCollection[json.id] = json;
-          setCollection(newCollection);
-        }
-        console.log(newCollection);
-        setLastPage(page);
-        setPage("open");
-      }
+      onHashChange();
     }
   }, [dataLoaded]);
+
+  const onHashChange = () => {
+    var newValentineData = window.location.hash.replace(/^#\/?/, "");
+    if (newValentineData) {
+      tryFetchData(newValentineData);
+    }
+  };
+
+  async function tryFetchData(data) {
+    const json = await fetch(`${BASE}/${data}`).then((r) => r.json());
+    if (!json) {
+      return;
+    }
+    setCurrentValentine(json);
+    console.log(json, collection);
+    var newCollection = { ...collection };
+    if (!newCollection[json.id]) {
+      newCollection[json.id] = json;
+      setCollection(newCollection);
+    }
+    console.log(newCollection);
+    setLastPage(page);
+    setPage("open");
+  }
 
   useEffect(() => {
     saveData();
@@ -97,12 +104,6 @@ function App() {
     console.log(tempStatus);
     if (page == "main") {
       return "MAKE A VALENTINE!";
-    } else if (tempStatus == "writing") {
-      return "SPEAK YO SHIT";
-    } else if (tempStatus == "sharing") {
-      return "SEND TO UR CRUSH";
-    } else if (page == "draw") {
-      return "DRAW YOUR CARD";
     } else if (page == "open") {
       if (lastPage == "collection") {
         return "THIS IS A VALENTINE";
@@ -111,6 +112,12 @@ function App() {
       }
     } else if (page == "collection") {
       return "YOUR VALENTINES";
+    } else if (tempStatus == "writing") {
+      return "SPEAK YO SHIT";
+    } else if (tempStatus == "sharing") {
+      return "SEND TO UR CRUSH";
+    } else if (page == "draw") {
+      return "DRAW YOUR CARD";
     }
   };
 
@@ -152,7 +159,8 @@ function App() {
     if (lastPage == "collection") {
       setPage("collection");
     } else {
-      window.location.href = "/";
+      console.log(window.location);
+      setPage("collection");
     }
   };
 

@@ -75,6 +75,7 @@ export default function MiniValentine(props) {
     return {
       width: rect.width + "px",
       height: rect.height + "px",
+      display: "flex",
     };
   };
 
