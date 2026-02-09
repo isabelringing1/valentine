@@ -73,11 +73,11 @@ function App() {
       console.log("loaded ", saveData);
       setCollection(saveData.collection);
       setUserId(saveData.userId);
-      setDataLoaded(true);
     } else {
       var id = idGen.randomUUID();
       setUserId(id);
     }
+    setDataLoaded(true);
   }
 
   function saveData() {
