@@ -67,13 +67,13 @@ function App() {
     if (saveData != null) {
       try {
         saveData = JSON.parse(window.atob(saveData));
-        console.log("loaded ", saveData);
-        setCollection(saveData.collection);
-        setUserId(saveData.userId);
-        setDataLoaded(true);
       } catch (e) {
-        return null;
+        saveData = JSON.parse(saveData);
       }
+      console.log("loaded ", saveData);
+      setCollection(saveData.collection);
+      setUserId(saveData.userId);
+      setDataLoaded(true);
     } else {
       var id = idGen.randomUUID();
       setUserId(id);
@@ -86,7 +86,8 @@ function App() {
       userId: userId,
     };
     var saveString = JSON.stringify(newPlayerData);
-    localStorage.setItem("valentines", window.btoa(saveString));
+    console.log(saveString);
+    localStorage.setItem("valentines", saveString);
   }
 
   useEffect(() => {
