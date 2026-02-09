@@ -231,7 +231,7 @@ svg {
   margin-bottom: 1.5dvh;
 }
 
-.start-over-button {
+.red {
   background-color: #ff4b4b;
   filter: drop-shadow(0 0.7dvh #cb2727);
 }
@@ -265,6 +265,8 @@ svg {
   font-size: 3dvh;
   bottom: 3dvh;
   right: 3dvh;
+  width: 70dvw;
+  text-align: right;
 }
 
 .view-all-button {
@@ -329,6 +331,58 @@ svg {
 .envelope {
   width: 60dvh;
   cursor: pointer;
+}
+
+.close-container {
+  display: flex;
+  height: 20dvh;
+  position: absolute;
+  justify-content: center;
+  align-items: center;
+  bottom: 2dvh;
+  width: 100%;
+}
+
+.delete-button {
+  margin-left: 3dvh;
+  margin-bottom: 1.5dvh;
+}
+
+.popup-container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  background-color: #00000054;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.popup {
+  height: 35dvh;
+  width: auto;
+  aspect-ratio: 5/3;
+  background-color: #ffe1ec;
+  border-radius: 3dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  font-size: 4dvh;
+}
+
+.popup-text {
+  padding: 0 3dvh;
+  text-align: center;
+}
+
+#popup-button-2 {
+  margin-left: 3dvh;
+}
+
+.popup-button-container {
+  display: flex;
+  flex-direction: row;
 }
 
 /* Mobile */
@@ -404,5 +458,10 @@ svg {
   #collection-container {
     width: 100vw;
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .popup {
+    aspect-ratio: none;
+    width: 90vw;
   }
 }

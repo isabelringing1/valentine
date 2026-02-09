@@ -4,7 +4,7 @@ import envelope_closed from "/envelope_closed.png";
 const isMobile = window.innerWidth <= 600;
 
 export default function Valentine(props) {
-  const { data, closeValentine, firstView } = props;
+  const { data, closeValentine, firstView, tryDeleteValentine } = props;
 
   var [svgStateLoaded, setSvgStateLoaded] = useState(false);
   var [envelopeOpened, setEnvelopeOpened] = useState(false);
@@ -131,6 +131,10 @@ export default function Valentine(props) {
     closeValentine();
   };
 
+  const onDeleteValentine = () => {
+    tryDeleteValentine();
+  };
+
   return (
     <div className="valentine-container" id="valentine-container">
       <div id="show-valentine">
@@ -160,10 +164,21 @@ export default function Valentine(props) {
             {LZString.decompressFromEncodedURIComponent(data.m)}
           </div>
         )}
-        {svgStateLoaded && (
+        {firstView && svgStateLoaded && (
           <div className="share-container">
             <button className="close-button" onClick={onCloseValentine}>
               Slay
+            </button>
+          </div>
+        )}
+        {!firstView && svgStateLoaded && (
+          <div className="close-container">
+            <button className="close-button" onClick={onCloseValentine}>
+              Close
+            </button>
+
+            <button className="delete-button red" onClick={onDeleteValentine}>
+              Delete
             </button>
           </div>
         )}

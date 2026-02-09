@@ -5,6 +5,7 @@ import DrawPage from "./DrawPage";
 import Valentine from "./Valentine";
 import back from "/back.png";
 import Collection from "./Collection";
+import Popup from "./Popup";
 const BASE = "https://kv-worker.isabisabel.workers.dev";
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
   const [collection, setCollection] = useState({});
   const [dataLoaded, setDataLoaded] = useState(false);
   const [userId, setUserId] = useState(null);
+  const [popupState, setPopupState] = useState(null);
 
   const options = { debug: false };
   const idGen = new ShortUID(options);
@@ -192,6 +194,19 @@ function App() {
     setPage("open");
   };
 
+  const showDeletePopup = () => {
+    setPopupState("delete");
+  };
+
+  const deleteCurrentValentine = () => {
+    var newCollection = { ...collection };
+    delete newCollection[currentValentine.id];
+    setCollection(newCollection);
+    closeValentine();
+    setCurrentValentine(null);
+    setPopupState(null);
+  };
+
   return (
     <div id="content">
       <div className="title-container">
@@ -218,9 +233,9 @@ function App() {
             ?
           </div>
 
-          {collection.length == 0 ? (
+          {Object.keys(collection).length == 0 ? (
             <div className="collection-container">
-              "No one sent you any valentines yet :("
+              No one's sent you any valentines yet :(
             </div>
           ) : (
             <div className="collection-container">
@@ -257,6 +272,7 @@ function App() {
           data={currentValentine}
           closeValentine={closeValentine}
           firstView={lastPage != "collection"}
+          tryDeleteValentine={showDeletePopup}
         />
       )}
 
@@ -274,6 +290,19 @@ function App() {
           onMiniValentineClicked={onMiniValentineClicked}
           setPage={setPage}
           setLastPage={setLastPage}
+        />
+      )}
+
+      {popupState == "delete" && (
+        <Popup
+          title={"Are you sure you want to delete this?"}
+          buttonOneText={"Cancel"}
+          buttonTwoText={"Delete"}
+          buttonTwoFn={deleteCurrentValentine}
+          buttonOneFn={() => {
+            setPopupState(null);
+          }}
+          setPopupState={setPopupState}
         />
       )}
     </div>
