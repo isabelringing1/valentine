@@ -179,14 +179,16 @@ export default function DrawPage(props) {
   }
 
   async function copyShareLink() {
+    setProcessing(true);
     var id = await exportValentine();
-    navigator.clipboard.writeText(
+    setProcessing(false);
+    var url = window.location.origin + window.location.pathname + "#/" + id;
+    /*navigator.clipboard.writeText(
       window.location.origin + window.location.pathname + "#/" + id,
-    );
-    setShowLinkCopied(true);
-    setTimeout(() => {
-      setShowLinkCopied(false);
-    }, 1000);
+    );*/
+    navigator.share({
+      url: url,
+    });
   }
 
   async function exportValentine() {

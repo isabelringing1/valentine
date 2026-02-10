@@ -241,7 +241,7 @@ function App() {
             <div className="collection-container">
               You've received:
               <div>{getNumSweet()} 🩷</div>
-              <div>{getNumSpicy()} 🔥</div>
+              <div>{getNumSpicy()} ❤️‍🔥</div>
               <button
                 className="view-all-button"
                 onClick={() => {
