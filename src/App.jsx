@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 
 import "./App.css";
 import DrawPage from "./DrawPage";
@@ -6,6 +6,8 @@ import Valentine from "./Valentine";
 import back from "/back.png";
 import Collection from "./Collection";
 import Popup from "./Popup";
+import { initModel } from "./Tensorflow";
+
 const BASE = "https://kv-worker.isabisabel.workers.dev";
 
 function App() {
@@ -14,12 +16,13 @@ function App() {
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [category, setCategory] = useState(null);
-  const [tempStatus, setTempStatus] = useState(null);
   const [currentValentine, setCurrentValentine] = useState(null);
   const [collection, setCollection] = useState({});
   const [dataLoaded, setDataLoaded] = useState(false);
   const [userId, setUserId] = useState(null);
   const [popupState, setPopupState] = useState(null);
+
+  const subtitleRef = useRef(null);
 
   const options = { debug: false };
   const idGen = new ShortUID(options);
@@ -27,6 +30,7 @@ function App() {
   useEffect(() => {
     loadData();
     window.addEventListener("hashchange", onHashChange);
+    initModel();
   }, []);
 
   useEffect(() => {
@@ -93,81 +97,42 @@ function App() {
   }
 
   useEffect(() => {
-    setTitle(getDefaultTitle());
-    setSubtitle(getDefaultSubtitle());
+    var newTitle = "";
+    if (page == "main") {
+      newTitle = "MAKE A VALENTINE!";
+    } else if (page == "open") {
+      if (lastPage == "collection") {
+        newTitle = "THIS IS A VALENTINE";
+      } else if (currentValentine.u == userId) {
+        newTitle = "YOU SENT A VALENTINE TO YOURSELF?";
+      }
+      newTitle = "YOU GOT A VALENTINE!";
+    } else if (page == "collection") {
+      newTitle = "YOUR VALENTINES";
+    } else if (page == "draw") {
+      newTitle = "DRAW YOUR CARD";
+    }
+    setTitle(newTitle);
+    setSubtitle("");
   }, [page]);
 
   useEffect(() => {
-    if (tempStatus == "redo") {
-      setTempTitle("THAT'S NOT A HEART...");
-      var r = Math.random() * 100;
-      if (r < 50) {
-        setTempSubtitle("try again");
-      } else {
-        setTempSubtitle("close the path idiot");
-      }
-    } else {
-      setTitle(getDefaultTitle());
-      setSubtitle(getDefaultSubtitle());
+    if (subtitle == "") {
+      return;
     }
-  }, [tempStatus]);
-
-  var getDefaultTitle = () => {
-    console.log(tempStatus);
-    if (page == "main") {
-      return "MAKE A VALENTINE!";
-    } else if (page == "open") {
-      if (lastPage == "collection") {
-        return "THIS IS A VALENTINE";
-      } else {
-        if (currentValentine.u == userId) {
-          return "YOU SENT A VALENTINE TO YOURSELF?";
-        }
-        return "YOU GOT A VALENTINE!";
-      }
-    } else if (page == "collection") {
-      return "YOUR VALENTINES";
-    } else if (tempStatus == "writing") {
-      return "SPEAK YO SHIT";
-    } else if (tempStatus == "sharing") {
-      return "SEND TO UR CRUSH";
-    } else if (page == "draw") {
-      return "DRAW YOUR CARD";
+    if (subtitleRef.current) {
+      clearTimeout(subtitleRef.current);
     }
-  };
-
-  var getDefaultSubtitle = () => {
-    if (tempStatus == "confirming") {
-      return "yayy nice job";
-    }
-    return "";
-  };
-
-  const setTempTitle = (text, delay = 200, duration = 1000) => {
-    setTimeout(() => {
-      setSubtitle(text);
-    }, delay);
-
-    setTimeout(() => {
-      setSubtitle(getDefaultTitle());
-    }, duration + delay);
-  };
-
-  const setTempSubtitle = (text, delay = 200, duration = 1000) => {
-    setTimeout(() => {
-      setSubtitle(text);
-    }, delay);
-
-    setTimeout(() => {
-      setSubtitle(getDefaultSubtitle());
-    }, duration + delay);
-  };
+    subtitleRef.current = setTimeout(() => {
+      setSubtitle("");
+      subtitleRef.current = null;
+    }, 2000);
+  }, [subtitle]);
 
   const setValentinesCategory = (category) => {
     setCategory(category);
     setLastPage(page);
     setPage("draw");
-    setTempStatus(null);
   };
 
   const closeValentine = () => {
@@ -234,9 +199,7 @@ function App() {
           </div>
 
           {Object.keys(collection).length == 0 ? (
-            <div className="collection-container">
-              No one's sent you any valentines yet :(
-            </div>
+            <div className="collection-container">No valentines yet :(</div>
           ) : (
             <div className="collection-container">
               You've received:
@@ -258,9 +221,8 @@ function App() {
       {page == "draw" && (
         <DrawPage
           category={category}
-          drawStatus={tempStatus}
-          setDrawStatus={setTempStatus}
-          setTempSubtitle={setTempSubtitle}
+          setTitle={setTitle}
+          setSubtitle={setSubtitle}
           setPage={setPage}
           setLastPage={setLastPage}
           userId={userId}

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 
 import { ReactSketchCanvas } from "react-sketch-canvas";
 import { isHeartShaped } from "./Util";
+import { predict } from "./Tensorflow";
 import svgSlim from "svg-slim";
 
 import redo from "/redo.png";
@@ -11,15 +12,7 @@ const isMobile = window.innerWidth <= 600;
 const BASE = "https://kv-worker.isabisabel.workers.dev";
 
 export default function DrawPage(props) {
-  var {
-    category,
-    drawStatus,
-    setDrawStatus,
-    setTempSubtitle,
-    setPage,
-    setLastPage,
-    userId,
-  } = props;
+  var { category, setTitle, setSubtitle, setPage, setLastPage, userId } = props;
   var [drawingComplete, setDrawingComplete] = useState(false);
   var [drawingConfirmed, setDrawingConfirmed] = useState(false);
   var [valentineFinished, setValentineFinished] = useState(false);
@@ -27,8 +20,9 @@ export default function DrawPage(props) {
   var [message, setMessage] = useState("");
   var [fromText, setFromText] = useState("");
   var [toText, setToText] = useState("");
-  var [showLinkCopied, setShowLinkCopied] = useState(false);
   var [currentId, setCurrentId] = useState(null);
+  var [numIncorrect, setNumIncorrect] = useState(0);
+  var [processing, setProcessing] = useState(false);
 
   var canvasRef = useRef(null);
   var toInputRef = useRef(null);
@@ -46,24 +40,119 @@ export default function DrawPage(props) {
   const idGen = new ShortUID(options);
 
   const onStroke = (e) => {
-    console.log(e);
+    processDrawing(e);
+  };
+
+  async function processDrawing(e) {
     if (!e.paths || e.paths.length == 1) {
-      console.log(e);
       return;
     }
+    var needsRedo = false;
     if (isClosed(e.paths)) {
-      console.log("Closed path");
-      setDrawingComplete(true);
       var path = document.getElementById("react-sketch-canvas__0");
       path.setAttribute("style", "fill: " + strokeColor);
-      console.log(isHeartShaped(e.paths));
-      setDrawStatus("confirming");
+
+      var canvas = await turnPathIntoCanvas(path);
+      var prediction = await predict(canvas);
+
+      var p = category == "sweet" ? prediction[0] : prediction[1];
+      var op = category == "sweet" ? prediction[1] : prediction[0];
+      if (p.probability > 0.97) {
+        var r = Math.random() * 100;
+        if (r < 50) {
+          setSubtitle("beautiful");
+        } else {
+          setSubtitle("masterpiece");
+        }
+      } else if (p.probability > 0.75) {
+        var r = Math.random() * 100;
+        if (r < 50) {
+          setSubtitle(
+            "you think this is a " +
+              (category == "sweet" ? "heart" : "dick") +
+              "?",
+          );
+        } else {
+          setSubtitle("ummm... i guess");
+        }
+      } else if (op.probability > 0.97) {
+        if (numIncorrect > 0) {
+          setSubtitle(
+            "stop drawing " + (category == "sweet" ? "dick" : "heart") + "s!!",
+          );
+        } else {
+          setSubtitle("that wasn't what you were supposed to draw!");
+        }
+
+        setNumIncorrect(numIncorrect + 1);
+        needsRedo = true;
+      } else {
+        var r = Math.random() * 100;
+        if (r < 50) {
+          setSubtitle("you have to be joking");
+        } else {
+          setSubtitle("wtf was that?");
+        }
+
+        needsRedo = true;
+      }
+      console.log(
+        prediction[0].probability,
+        prediction[1].probability,
+        prediction[2].probability,
+      );
     } else {
-      console.log("open path");
-      setDrawStatus("redo");
-      canvasRef.current.clearCanvas();
+      var r = Math.random() * 100;
+      if (r < 50) {
+        setSubtitle("try again");
+      } else {
+        setSubtitle("close the path idiot");
+      }
+      needsRedo = true;
     }
-  };
+
+    if (needsRedo) {
+      canvasRef.current.clearCanvas();
+    } else {
+      setDrawingComplete(true);
+    }
+  }
+
+  async function turnPathIntoCanvas(path) {
+    const bbox = path.getBBox();
+    var padding = 10;
+
+    var dimension = Math.max(bbox.width, bbox.height);
+    const width = dimension + padding * 2;
+    const height = dimension + padding * 2;
+    var newSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    newSvg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    newSvg.setAttribute("width", width);
+    newSvg.setAttribute("height", height);
+    newSvg.setAttribute(
+      "viewBox",
+      `${bbox.x - padding} ${bbox.y - padding} ${width} ${height}`,
+    );
+    const clonedPath = path.cloneNode(true);
+    newSvg.appendChild(clonedPath);
+    const svgString = new XMLSerializer().serializeToString(newSvg);
+    const svgBase64 = btoa(svgString);
+    const imgSrc = "data:image/svg+xml;base64," + svgBase64;
+    const img = new Image();
+    img.width = bbox.width;
+    img.height = bbox.height;
+    img.style.background = "#ffd4e9";
+    img.src = imgSrc;
+    await img.decode();
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, width, height);
+    ctx.drawImage(img, 0, 0, width, height);
+    return canvas;
+  }
 
   const isClosed = (paths, threshold = 100) => {
     for (var i = 0; i < paths.length - 1; i++) {
@@ -106,8 +195,14 @@ export default function DrawPage(props) {
 
   function redoDrawing() {
     setDrawingComplete(false);
-    canvasRef.current.undo();
+    canvasRef.current.clearCanvas();
     setNumRedos(numRedos + 1);
+    if (numRedos == 2) {
+      setSubtitle("again??");
+    }
+    if (numRedos == 3) {
+      setSubtitle("dude that one was FINE");
+    }
   }
 
   function confirmDrawing() {
@@ -134,8 +229,7 @@ export default function DrawPage(props) {
     }
     svg.style.transform =
       "translate(" + -offFromCenterX + "px, " + -offFromCenterY + "px)";
-
-    setDrawStatus("writing");
+    setTitle("WRITE SOMETHING");
   }
 
   function getTextDivStyle() {
@@ -169,13 +263,8 @@ export default function DrawPage(props) {
 
   function finishValentine() {
     setValentineFinished(true);
-    var r = Math.random() * 100;
-    if (r < 50) {
-      setTempSubtitle("beautiful");
-    } else {
-      setTempSubtitle("masterpiece");
-    }
-    setDrawStatus("sharing");
+
+    setTitle("SEND TO YOUR CRUSH");
   }
 
   async function copyShareLink() {
@@ -263,7 +352,6 @@ export default function DrawPage(props) {
         </div>
       )}
       <ReactSketchCanvas
-        readOnly={true}
         style={styles}
         ref={canvasRef}
         width={window.innerWidth}
@@ -339,12 +427,16 @@ export default function DrawPage(props) {
       )}
       {valentineFinished && (
         <div className="share-container">
-          <button className="share-button" onClick={copyShareLink}>
-            {showLinkCopied ? "Link Copied!" : "Share"}
+          <button
+            className="share-button"
+            onClick={copyShareLink}
+            disabled={processing}
+          >
+            {processing ? "..." : "Share"}
           </button>
 
           <button
-            className="start-over-button"
+            className="start-over-button red"
             onClick={() => {
               setLastPage("draw");
               setPage("main");
