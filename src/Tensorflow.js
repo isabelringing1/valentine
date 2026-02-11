@@ -13,6 +13,7 @@ async function initModel() {
   // Note: the pose library adds "tmImage" object to your window (window.tmImage)
   model = await tmImage.load(modelURL, metadataURL);
   maxPredictions = model.getTotalClasses();
+  console.log("model loaded!");
 }
 
 // run the webcam image through the image model

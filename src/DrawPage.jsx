@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 
 import { ReactSketchCanvas } from "react-sketch-canvas";
+import { SyncLoader } from "react-spinners";
+
 import { isHeartShaped } from "./Util";
 import { predict } from "./Tensorflow";
 import svgSlim from "svg-slim";
@@ -22,7 +24,8 @@ export default function DrawPage(props) {
   var [toText, setToText] = useState("");
   var [currentId, setCurrentId] = useState(null);
   var [numIncorrect, setNumIncorrect] = useState(0);
-  var [processing, setProcessing] = useState(false);
+  var [predictProcessing, setPredictProcessing] = useState(false);
+  var [saveProcessing, setSaveProcessing] = useState(false);
 
   var canvasRef = useRef(null);
   var toInputRef = useRef(null);
@@ -52,8 +55,10 @@ export default function DrawPage(props) {
       var path = document.getElementById("react-sketch-canvas__0");
       path.setAttribute("style", "fill: " + strokeColor);
 
+      setPredictProcessing(true);
       var canvas = await turnPathIntoCanvas(path);
       var prediction = await predict(canvas);
+      setPredictProcessing(false);
 
       var p = category == "sweet" ? prediction[0] : prediction[1];
       var op = category == "sweet" ? prediction[1] : prediction[0];
@@ -66,11 +71,15 @@ export default function DrawPage(props) {
         }
       } else if (p.probability > 0.75) {
         var r = Math.random() * 100;
-        if (r < 50) {
+        if (r < 33) {
           setSubtitle(
-            "you think this is a " +
+            "this is the worst " +
               (category == "sweet" ? "heart" : "dick") +
-              "?",
+              " i've ever seen",
+          );
+        } else if (r < 66) {
+          setSubtitle(
+            "you call this a " + (category == "sweet" ? "heart" : "dick") + "?",
           );
         } else {
           setSubtitle("ummm... i guess");
@@ -268,9 +277,9 @@ export default function DrawPage(props) {
   }
 
   async function copyShareLink() {
-    setProcessing(true);
+    setSaveProcessing(true);
     var id = await exportValentine();
-    setProcessing(false);
+    setSaveProcessing(false);
     var url = window.location.origin + window.location.pathname + "#/" + id;
     /*navigator.clipboard.writeText(
       window.location.origin + window.location.pathname + "#/" + id,
@@ -415,6 +424,13 @@ export default function DrawPage(props) {
         </div>
       )}
 
+      <SyncLoader
+        loading={predictProcessing}
+        size={15}
+        color={"#000000a8"}
+        cssOverride={{ position: "absolute" }}
+      />
+
       {valentineFinished && (
         <div
           className="final-message-container"
@@ -430,9 +446,9 @@ export default function DrawPage(props) {
           <button
             className="share-button"
             onClick={copyShareLink}
-            disabled={processing}
+            disabled={saveProcessing}
           >
-            {processing ? "..." : "Share"}
+            {saveProcessing ? "..." : "Share"}
           </button>
 
           <button

@@ -15,7 +15,9 @@
   "dependencies": {
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-markdown": "^10.1.0",
     "react-sketch-canvas": "^6.2.0",
+    "react-spinners": "^0.17.0",
     "short-uid": "^0.1.0",
     "svg-slim": "^2.0.5"
   },

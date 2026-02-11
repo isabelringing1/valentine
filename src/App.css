@@ -361,21 +361,30 @@ svg {
 }
 
 .popup {
-  height: 35dvh;
+  padding: 3dvh 2dvh;
+
   width: auto;
   aspect-ratio: 5/3;
   background-color: #ffe1ec;
   border-radius: 3dvh;
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
+  justify-content: start;
   align-items: center;
   font-size: 4dvh;
+}
+
+p {
+  margin: 2dvh;
 }
 
 .popup-text {
   padding: 0 3dvh;
   text-align: center;
+}
+
+.popup-body {
+  font-size: 3dvh;
 }
 
 #popup-button-2 {
@@ -385,6 +394,24 @@ svg {
 .popup-button-container {
   display: flex;
   flex-direction: row;
+}
+
+.info-button {
+  position: absolute;
+  font-size: 3dvh;
+  width: 6dvh;
+  height: 6dvh;
+  bottom: 3dvh;
+  left: 3dvh;
+  border-radius: 3dvh;
+  background-color: rgba(96, 96, 96, 0.213);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.info-button:hover {
+  filter: brightness(0.8);
 }
 
 /* Mobile */
@@ -464,6 +491,6 @@ svg {
 
   .popup {
     aspect-ratio: none;
-    width: 90vw;
+    width: 80vw;
   }
 }

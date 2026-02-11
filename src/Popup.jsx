@@ -1,6 +1,8 @@
+import Markdown from "react-markdown";
 export default function Popup(props) {
   var {
     title,
+    body,
     buttonOneText,
     buttonTwoText,
     buttonOneFn,
@@ -11,6 +13,14 @@ export default function Popup(props) {
     <div className="popup-container" onClick={() => setPopupState(null)}>
       <div className="popup">
         <div className="popup-text">{title}</div>
+        {body &&
+          body.map((p, i) => {
+            return (
+              <div key={"p-" + i} className="popup-body">
+                <Markdown>{p}</Markdown>
+              </div>
+            );
+          })}
 
         <div className="popup-button-container">
           <button
@@ -21,13 +31,15 @@ export default function Popup(props) {
             {buttonOneText}
           </button>
 
-          <button
-            className="popup-button red"
-            id="popup-button-2"
-            onClick={buttonTwoFn}
-          >
-            {buttonTwoText}
-          </button>
+          {buttonTwoText && (
+            <button
+              className="popup-button red"
+              id="popup-button-2"
+              onClick={buttonTwoFn}
+            >
+              {buttonTwoText}
+            </button>
+          )}
         </div>
       </div>
     </div>

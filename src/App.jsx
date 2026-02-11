@@ -99,14 +99,15 @@ function App() {
   useEffect(() => {
     var newTitle = "";
     if (page == "main") {
-      newTitle = "MAKE A VALENTINE!";
+      newTitle = "MAKE A SHITTY VALENTINE";
     } else if (page == "open") {
       if (lastPage == "collection") {
         newTitle = "THIS IS A VALENTINE";
       } else if (currentValentine.u == userId) {
         newTitle = "YOU SENT A VALENTINE TO YOURSELF?";
+      } else {
+        newTitle = "YOU GOT A VALENTINE!";
       }
-      newTitle = "YOU GOT A VALENTINE!";
     } else if (page == "collection") {
       newTitle = "YOUR VALENTINES";
     } else if (page == "draw") {
@@ -163,6 +164,10 @@ function App() {
     setPopupState("delete");
   };
 
+  const showInfoPopup = () => {
+    setPopupState("info");
+  };
+
   const deleteCurrentValentine = () => {
     var newCollection = { ...collection };
     delete newCollection[currentValentine.id];
@@ -178,7 +183,6 @@ function App() {
         <div className="title">{title}</div>
         <div className="subtitle">{subtitle}</div>
       </div>
-
       {page == "main" && (
         <div className="page page-main">
           <div className="buttons-container">
@@ -218,6 +222,12 @@ function App() {
           )}
         </div>
       )}
+
+      {page == "main" && (
+        <div className="info-button" onClick={showInfoPopup}>
+          ?
+        </div>
+      )}
       {page == "draw" && (
         <DrawPage
           category={category}
@@ -228,7 +238,6 @@ function App() {
           userId={userId}
         />
       )}
-
       {page == "open" && (
         <Valentine
           data={currentValentine}
@@ -237,7 +246,6 @@ function App() {
           tryDeleteValentine={showDeletePopup}
         />
       )}
-
       {page != "main" && (
         <img
           src={back}
@@ -245,7 +253,6 @@ function App() {
           onClick={() => setPage("main")}
         />
       )}
-
       {page == "collection" && (
         <Collection
           collection={collection}
@@ -254,13 +261,27 @@ function App() {
           setLastPage={setLastPage}
         />
       )}
-
       {popupState == "delete" && (
         <Popup
           title={"Are you sure you want to delete this?"}
           buttonOneText={"Cancel"}
           buttonTwoText={"Delete"}
           buttonTwoFn={deleteCurrentValentine}
+          buttonOneFn={() => {
+            setPopupState(null);
+          }}
+          setPopupState={setPopupState}
+        />
+      )}
+
+      {popupState == "info" && (
+        <Popup
+          title={"Info"}
+          body={[
+            "made by [isabel](https://isabisabel.com) in like three days",
+            "special thanks to [anna](https://www.craftwithanna.com/)!",
+          ]}
+          buttonOneText={"Close"}
           buttonOneFn={() => {
             setPopupState(null);
           }}
