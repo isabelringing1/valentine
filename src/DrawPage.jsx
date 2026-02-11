@@ -42,6 +42,13 @@ export default function DrawPage(props) {
   const options = { debug: false };
   const idGen = new ShortUID(options);
 
+  useEffect(() => {
+    var canvas_with_mask = document.querySelector(
+      "#react-sketch-canvas__stroke-group-0",
+    );
+    canvas_with_mask.removeAttribute("mask");
+  }, []);
+
   const onStroke = (e) => {
     processDrawing(e);
   };
