@@ -167,7 +167,6 @@ button:active:not([disabled]) {
   padding: 1dvh 0;
   display: flex;
   justify-content: space-around;
-  transform: translate(0, -50%);
 }
 
 .input {
@@ -208,6 +207,7 @@ svg {
 }
 
 .final-message-container {
+  transform: translateY(-50%);
   display: flex;
   flex-direction: column;
   position: absolute;
@@ -375,6 +375,7 @@ svg {
   justify-content: start;
   align-items: center;
   font-size: 4dvh;
+  text-align: center;
 }
 
 p {
@@ -383,7 +384,6 @@ p {
 
 .popup-text {
   padding: 0 3dvh;
-  text-align: center;
 }
 
 .popup-body {
@@ -494,6 +494,7 @@ p {
     padding: 0.5dvh 0;
   }
   .final-message-container {
+    transform: translateY(0%);
     width: 100dvw;
     text-align: center;
   }

@@ -22,6 +22,7 @@ function App() {
   const [userId, setUserId] = useState(null);
   const [popupState, setPopupState] = useState(null);
   const [modelLoaded, setModelLoaded] = useState(null);
+  const [numFinished, setNumFinished] = useState(0);
 
   const subtitleRef = useRef(null);
 
@@ -53,20 +54,20 @@ function App() {
       return;
     }
     setCurrentValentine(json);
-    console.log(json);
+    //console.log(json);
     var newCollection = { ...collection };
     if (!newCollection[json.id] && json.u != userId) {
       newCollection[json.id] = json;
       setCollection(newCollection);
     }
-    console.log(newCollection);
+    //console.log(newCollection);
     setLastPage(page);
     setPage("open");
   }
 
   useEffect(() => {
     saveData();
-  }, [collection, userId]);
+  }, [collection, userId, numFinished]);
 
   function loadData() {
     var saveData = localStorage.getItem("valentines");
@@ -77,9 +78,10 @@ function App() {
       } catch (e) {
         saveData = JSON.parse(saveData);
       }
-      console.log("loaded ", saveData);
+      //console.log("loaded ", saveData);
       setCollection(saveData.collection);
       setUserId(saveData.userId);
+      setNumFinished(saveData.numFinished);
     } else {
       var id = idGen.randomUUID();
       setUserId(id);
@@ -91,9 +93,10 @@ function App() {
     var newPlayerData = {
       collection: collection,
       userId: userId,
+      numFinished: numFinished,
     };
     var saveString = JSON.stringify(newPlayerData);
-    console.log(saveString);
+    //console.log(saveString);
     localStorage.setItem("valentines", saveString);
   }
 
@@ -237,6 +240,8 @@ function App() {
           setPage={setPage}
           setLastPage={setLastPage}
           userId={userId}
+          numFinished={numFinished}
+          setNumFinished={setNumFinished}
         />
       )}
       {page == "open" && (

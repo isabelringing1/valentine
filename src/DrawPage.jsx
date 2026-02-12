@@ -14,7 +14,16 @@ const isMobile = window.innerWidth <= 600;
 const BASE = "https://kv-worker.isabisabel.workers.dev";
 
 export default function DrawPage(props) {
-  var { category, setTitle, setSubtitle, setPage, setLastPage, userId } = props;
+  var {
+    category,
+    setTitle,
+    setSubtitle,
+    setPage,
+    setLastPage,
+    userId,
+    numFinished,
+    setNumFinished,
+  } = props;
   var [drawingComplete, setDrawingComplete] = useState(false);
   var [drawingConfirmed, setDrawingConfirmed] = useState(false);
   var [valentineFinished, setValentineFinished] = useState(false);
@@ -67,6 +76,9 @@ export default function DrawPage(props) {
       path.setAttribute("style", "fill: " + strokeColor);
 
       setPredictProcessing(true);
+      if (numFinished == 0 || isMobile) {
+        setSubtitle("analyzing...");
+      }
       var canvas = await turnPathIntoCanvas(path);
       var prediction = await predict(canvas);
       setPredictProcessing(false);
@@ -136,12 +148,17 @@ export default function DrawPage(props) {
         prediction[2].probability,
       );*/
     } else {
-      var r = Math.random() * 100;
-      if (r < 50) {
-        setSubtitle("try again");
+      if (numFinished == 0) {
+        setSubtitle("you only get one line buddy");
       } else {
-        setSubtitle("close the path idiot");
+        var r = Math.random() * 100;
+        if (r < 50) {
+          setSubtitle("try again");
+        } else {
+          setSubtitle("close the path idiot");
+        }
       }
+
       needsRedo = true;
     }
 
@@ -207,7 +224,10 @@ export default function DrawPage(props) {
     const dx = last.x - first.x;
     const dy = last.y - first.y;
 
-    console.log("end points diff: " + Math.hypot(dx, dy));
+    //console.log("end points diff: " + Math.hypot(dx, dy));
+    if (isMobile) {
+      threshold = 3;
+    }
     if (Math.hypot(dx, dy) <= threshold) {
       return true;
     }
@@ -244,17 +264,18 @@ export default function DrawPage(props) {
 
     var path = document.getElementById("react-sketch-canvas__0");
     var rect = path.getBoundingClientRect();
-    console.log(rect);
+    setNumFinished(numFinished + 1);
+    //console.log(rect);
 
     var newScale = window.innerHeight / 2 / rect.height;
     if (isMobile) {
       var newScaleW = (window.innerWidth * 0.8) / rect.width;
       var newScaleH = (window.innerHeight * 0.4) / rect.height;
-      console.log(window.innerHeight, rect.height, newScaleH);
+      //console.log(window.innerHeight, rect.height, newScaleH);
       newScale = Math.min(newScaleW, newScaleH);
     }
     var svg = document.getElementById("react-sketch-canvas");
-    console.log(svg, newScale);
+    //console.log(svg, newScale);
     svg.style.scale = newScale;
     var offFromCenterX = rect.x + rect.width / 2 - window.innerWidth / 2;
     var offFromCenterY = rect.y + rect.height / 2 - window.innerHeight / 2;
@@ -317,7 +338,7 @@ export default function DrawPage(props) {
   async function exportValentine() {
     var svg = await canvasRef.current.exportSvg();
     var compressed = await svgSlim(svg);
-    console.log(compressed);
+    //console.log(compressed);
     const match = compressed.match(/d="([^"]*)"/);
 
     var compressedMessage = LZString.compressToEncodedURIComponent(message);
