@@ -1,9 +1,9 @@
-const URL = "https://teachablemachine.withgoogle.com/models/EO8NtXA1j/";
+const URL = "/model/";
 
-let model, labelContainer, maxPredictions;
+let model, labelContainer;
 
 // Load the image model and setup the webcam
-async function initModel() {
+async function initModel(setLoaded) {
   const modelURL = URL + "model.json";
   const metadataURL = URL + "metadata.json";
 
@@ -12,19 +12,14 @@ async function initModel() {
   // or files from your local hard drive
   // Note: the pose library adds "tmImage" object to your window (window.tmImage)
   model = await tmImage.load(modelURL, metadataURL);
-  maxPredictions = model.getTotalClasses();
   console.log("model loaded!");
+  setLoaded(true);
 }
 
 // run the webcam image through the image model
 async function predict(img) {
   // predict can take in an image, video or canvas html element
   return await model.predict(img);
-  for (let i = 0; i < maxPredictions; i++) {
-    const classPrediction =
-      prediction[i].className + ": " + prediction[i].probability.toFixed(2);
-    labelContainer.childNodes[i].innerHTML = classPrediction;
-  }
 }
 
 export { initModel, predict };

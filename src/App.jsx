@@ -21,6 +21,7 @@ function App() {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [userId, setUserId] = useState(null);
   const [popupState, setPopupState] = useState(null);
+  const [modelLoaded, setModelLoaded] = useState(null);
 
   const subtitleRef = useRef(null);
 
@@ -30,7 +31,7 @@ function App() {
   useEffect(() => {
     loadData();
     window.addEventListener("hashchange", onHashChange);
-    initModel();
+    initModel(setModelLoaded);
   }, []);
 
   useEffect(() => {
@@ -223,7 +224,7 @@ function App() {
         </div>
       )}
 
-      {page == "main" && (
+      {page == "main" && modelLoaded && (
         <div className="info-button" onClick={showInfoPopup}>
           ?
         </div>
