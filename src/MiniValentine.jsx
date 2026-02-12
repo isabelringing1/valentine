@@ -92,8 +92,8 @@ export default function MiniValentine(props) {
       )}
       {svgStateLoaded && (
         <div className="mini-message-container">
-          <div className="mini-message-text">From: {data.f}</div>
           <div className="mini-message-text">To: {data.t}</div>
+          <div className="mini-message-text">From: {data.f}</div>
         </div>
       )}
     </div>

@@ -123,7 +123,7 @@ export default function Valentine(props) {
     }
     return {
       left: rect.left + rect.width + "px",
-      top: rect.top + "px",
+      top: rect.top + rect.height / 2 + "px",
     };
   };
 
@@ -136,14 +136,15 @@ export default function Valentine(props) {
   };
 
   return (
-    <div className="valentine-container" id="valentine-container">
+    <div
+      className="valentine-container"
+      id="valentine-container"
+      onClick={() => {
+        if (firstView) setEnvelopeOpened(true);
+      }}
+    >
       <div id="show-valentine">
-        <div
-          className="envelope-container"
-          onClick={() => {
-            if (firstView) setEnvelopeOpened(true);
-          }}
-        >
+        <div className="envelope-container">
           {envelopeOpened ? (
             <img src={envelope_open} className="envelope envelope-open" />
           ) : (
@@ -155,8 +156,8 @@ export default function Valentine(props) {
             className="final-message-container"
             style={getFinalMessageStyle()}
           >
-            <div className="message-text">From: {data.f}</div>
             <div className="message-text">To: {data.t}</div>
+            <div className="message-text">From: {data.f}</div>
           </div>
         )}
         {svgStateLoaded && (

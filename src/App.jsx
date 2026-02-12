@@ -251,7 +251,16 @@ function App() {
         <img
           src={back}
           className="back-arrow"
-          onClick={() => setPage("main")}
+          onClick={() => {
+            setPage("main");
+            if (window.location.hash != "") {
+              history.pushState(
+                "",
+                document.title,
+                window.location.pathname + window.location.search,
+              );
+            }
+          }}
         />
       )}
       {page == "collection" && (

@@ -36,7 +36,7 @@ export default function DrawPage(props) {
 
   var strokeColor = category == "sweet" ? sweetFillColor : spicyFillColor;
   const styles = {
-    pointerEvents: drawingComplete ? "none" : "all",
+    pointerEvents: drawingComplete || predictProcessing ? "none" : "all",
   };
 
   const options = { debug: false };
@@ -57,6 +57,10 @@ export default function DrawPage(props) {
     if (!e.paths || e.paths.length == 1) {
       return;
     }
+    if (e.paths.length == 1) {
+      canvasRef.current.clearCanvas();
+      return;
+    }
     var needsRedo = false;
     if (isClosed(e.paths)) {
       var path = document.getElementById("react-sketch-canvas__0");
@@ -67,56 +71,70 @@ export default function DrawPage(props) {
       var prediction = await predict(canvas);
       setPredictProcessing(false);
 
-      var p = category == "sweet" ? prediction[0] : prediction[1];
-      var op = category == "sweet" ? prediction[1] : prediction[0];
-      if (p.probability > 0.97) {
-        var r = Math.random() * 100;
+      if (prediction) {
+        var p = category == "sweet" ? prediction[0] : prediction[1];
+        var op = category == "sweet" ? prediction[1] : prediction[0];
+        if (p.probability > 0.97) {
+          var r = Math.random() * 100;
+          if (r < 50) {
+            setSubtitle("beautiful");
+          } else {
+            setSubtitle("masterpiece");
+          }
+        } else if (p.probability > 0.75) {
+          var r = Math.random() * 100;
+          if (r < 33) {
+            setSubtitle(
+              "this is the worst " +
+                (category == "sweet" ? "heart" : "dick") +
+                " i've ever seen",
+            );
+          } else if (r < 66) {
+            setSubtitle(
+              "you call this a " +
+                (category == "sweet" ? "heart" : "dick") +
+                "?",
+            );
+          } else {
+            setSubtitle("ummm... i guess");
+          }
+        } else if (op.probability > 0.97) {
+          if (numIncorrect > 0) {
+            setSubtitle(
+              "stop drawing " +
+                (category == "sweet" ? "dick" : "heart") +
+                "s!!",
+            );
+          } else {
+            setSubtitle("that wasn't what you were supposed to draw!");
+          }
+
+          setNumIncorrect(numIncorrect + 1);
+          needsRedo = true;
+        } else {
+          var r = Math.random() * 100;
+          if (r < 50) {
+            setSubtitle("you have to be joking");
+          } else {
+            setSubtitle("wtf was that?");
+          }
+
+          needsRedo = true;
+        }
+      } else {
+        // no prediction, fake it
         if (r < 50) {
           setSubtitle("beautiful");
         } else {
           setSubtitle("masterpiece");
         }
-      } else if (p.probability > 0.75) {
-        var r = Math.random() * 100;
-        if (r < 33) {
-          setSubtitle(
-            "this is the worst " +
-              (category == "sweet" ? "heart" : "dick") +
-              " i've ever seen",
-          );
-        } else if (r < 66) {
-          setSubtitle(
-            "you call this a " + (category == "sweet" ? "heart" : "dick") + "?",
-          );
-        } else {
-          setSubtitle("ummm... i guess");
-        }
-      } else if (op.probability > 0.97) {
-        if (numIncorrect > 0) {
-          setSubtitle(
-            "stop drawing " + (category == "sweet" ? "dick" : "heart") + "s!!",
-          );
-        } else {
-          setSubtitle("that wasn't what you were supposed to draw!");
-        }
-
-        setNumIncorrect(numIncorrect + 1);
-        needsRedo = true;
-      } else {
-        var r = Math.random() * 100;
-        if (r < 50) {
-          setSubtitle("you have to be joking");
-        } else {
-          setSubtitle("wtf was that?");
-        }
-
-        needsRedo = true;
       }
-      console.log(
+
+      /*console.log(
         prediction[0].probability,
         prediction[1].probability,
         prediction[2].probability,
-      );
+      );*/
     } else {
       var r = Math.random() * 100;
       if (r < 50) {
@@ -213,7 +231,7 @@ export default function DrawPage(props) {
     setDrawingComplete(false);
     canvasRef.current.clearCanvas();
     setNumRedos(numRedos + 1);
-    if (numRedos == 2) {
+    if (numRedos == 2 || numRedos >= 4) {
       setSubtitle("again??");
     }
     if (numRedos == 3) {
@@ -431,12 +449,7 @@ export default function DrawPage(props) {
         </div>
       )}
 
-      <SyncLoader
-        loading={predictProcessing}
-        size={15}
-        color={"#000000a8"}
-        cssOverride={{ position: "absolute" }}
-      />
+      {predictProcessing && <div className="loader"></div>}
 
       {valentineFinished && (
         <div

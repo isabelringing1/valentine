@@ -124,6 +124,7 @@ button:active:not([disabled]) {
   align-items: center;
   justify-content: center;
   display: inline-block;
+  text-align: center;
 }
 
 .draw-button-container {
@@ -166,6 +167,7 @@ button:active:not([disabled]) {
   padding: 1dvh 0;
   display: flex;
   justify-content: space-around;
+  transform: translate(0, -50%);
 }
 
 .input {
@@ -312,6 +314,7 @@ svg {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  text-align: center;
 }
 
 .mini-message-text {
@@ -412,6 +415,25 @@ p {
 
 .info-button:hover {
   filter: brightness(0.8);
+}
+
+/* HTML: <div class="loader"></div> */
+.loader {
+  width: fit-content;
+
+  font-size: 4dvh;
+  clip-path: inset(0 1.2ch 0 0);
+  animation: l4 1s steps(4) infinite;
+  position: absolute;
+  color: rgba(0, 0, 0, 0.588);
+}
+.loader:before {
+  content: "Loading...";
+}
+@keyframes l4 {
+  to {
+    clip-path: inset(0 -0.5ch 0 0);
+  }
 }
 
 /* Mobile */
