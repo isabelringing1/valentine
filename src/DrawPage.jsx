@@ -35,6 +35,7 @@ export default function DrawPage(props) {
   var [numIncorrect, setNumIncorrect] = useState(0);
   var [predictProcessing, setPredictProcessing] = useState(false);
   var [saveProcessing, setSaveProcessing] = useState(false);
+  var [showLinkCopied, setShowLinkCopied] = useState(false);
 
   var canvasRef = useRef(null);
   var toInputRef = useRef(null);
@@ -330,9 +331,19 @@ export default function DrawPage(props) {
     /*navigator.clipboard.writeText(
       window.location.origin + window.location.pathname + "#/" + id,
     );*/
-    navigator.share({
-      url: url,
-    });
+    try {
+      navigator.share({
+        url: url,
+      });
+    } catch {
+      navigator.clipboard.writeText(
+        window.location.origin + window.location.pathname + "#/" + id,
+      );
+      setShowLinkCopied(true);
+      setTimeout(() => {
+        setShowLinkCopied(false);
+      }, 1000);
+    }
   }
 
   async function exportValentine() {
@@ -489,7 +500,7 @@ export default function DrawPage(props) {
             onClick={copyShareLink}
             disabled={saveProcessing}
           >
-            {saveProcessing ? "..." : "Share"}
+            {saveProcessing ? "..." : showLinkCopied ? "Link Copied!" : "Share"}
           </button>
 
           <button
